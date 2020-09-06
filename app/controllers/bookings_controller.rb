@@ -4,12 +4,15 @@ class BookingsController < ApplicationController
         @flight = Flight.find(params[:flight_id])
         @booking = Booking.new
         @passenger = Passenger.new
-        params[:num_passengers].to_i.times { @booking.passengers.build }
+        params[:num_passengers].to_i.times {@booking.passengers.build }
     end
     
     def create
         @booking = Booking.new(booking_params)
         if @booking.save
+            @booking.passengers.each do |pass|
+                PassengerMailer.with(booking: @booking, passenger: pass).thank_you_email.deliver_now!
+            end
             redirect_to booking_path(@booking)
         else
             render new_booking_path
